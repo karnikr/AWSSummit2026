@@ -66,14 +66,22 @@ function applyLang(lang) {
     if (dict[key] && typeof dict[key] === "string") el.textContent = dict[key];
   });
 
-  document.querySelectorAll(".lang-btn").forEach((b) =>
-    b.classList.toggle("active", b.dataset.lang === lang)
-  );
+  const toggle = document.getElementById("lang-toggle");
+  if (toggle) {
+    toggle.classList.toggle("ar", lang === "ar");
+    toggle.setAttribute("aria-checked", lang === "ar" ? "true" : "false");
+  }
 }
 
-document.querySelectorAll(".lang-btn").forEach((btn) => {
-  btn.addEventListener("click", () => applyLang(btn.dataset.lang));
-});
+// Single sliding toggle: click or keyboard flips between EN and Arabic.
+const langToggle = document.getElementById("lang-toggle");
+if (langToggle) {
+  const flip = () => applyLang(CURRENT_LANG === "ar" ? "en" : "ar");
+  langToggle.addEventListener("click", flip);
+  langToggle.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); flip(); }
+  });
+}
 
 function t(key, arg) {
   const v = I18N[CURRENT_LANG][key];
