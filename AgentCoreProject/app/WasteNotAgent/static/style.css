@@ -1,0 +1,104 @@
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #f4f6f5;
+  color: #1c2b27;
+}
+header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 16px 24px;
+  background: #1f6f54;
+  color: #fff;
+}
+header h1 { margin: 0; font-size: 22px; }
+header .tag { opacity: .85; font-size: 14px; }
+main {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  grid-template-rows: 1fr auto;
+  gap: 16px;
+  padding: 16px;
+  height: calc(100vh - 64px);
+}
+.panel {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08);
+  padding: 16px;
+  overflow: auto;
+}
+.form-panel { grid-row: 1 / 3; }
+.map-panel { padding: 0; overflow: hidden; }
+.narrative-panel { grid-column: 2; }
+#map { width: 100%; height: 100%; min-height: 340px; }
+h2 { margin: 0 0 12px; font-size: 16px; }
+label { display: block; font-size: 13px; margin-bottom: 12px; color: #3a4a45; }
+input, select {
+  width: 100%; margin-top: 4px; padding: 8px 10px;
+  border: 1px solid #cfd8d4; border-radius: 8px; font-size: 14px;
+}
+.row { display: flex; gap: 10px; }
+.row label { flex: 1; }
+button {
+  width: 100%; padding: 11px; border: 0; border-radius: 8px;
+  background: #1f6f54; color: #fff; font-size: 15px; font-weight: 600; cursor: pointer;
+}
+button:disabled { opacity: .6; cursor: wait; }
+.impact { margin-top: 20px; border-top: 1px solid #eee; padding-top: 14px; }
+.impact h3 { margin: 0 0 10px; font-size: 14px; }
+.metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.metric {
+  background: #eef5f2; border-radius: 8px; padding: 10px; text-align: center;
+}
+.metric span { display: block; font-size: 22px; font-weight: 700; color: #1f6f54; }
+.metric small { color: #6a7a75; font-size: 11px; }
+.driver { margin-top: 12px; font-size: 13px; color: #3a4a45; }
+.narrative {
+  font-size: 13px; line-height: 1.55; color: #2a3a35; max-height: 220px; overflow: auto;
+}
+.narrative table { border-collapse: collapse; width: 100%; margin: 8px 0; }
+.narrative th, .narrative td { border: 1px solid #dde5e2; padding: 4px 8px; text-align: left; }
+.hidden { display: none; }
+.leaflet-popup-content { font-size: 13px; }
+
+/* Enhancements: bigger narrative panel, numbered stop markers, thinking badge */
+.narrative-panel { grid-column: 2; }
+.narrative { max-height: 260px; }
+.thinking {
+  font-size: 11px; font-weight: 500; color: #b8862b; background: #fdf3dd;
+  padding: 2px 8px; border-radius: 10px; margin-left: 8px;
+}
+.stop-marker {
+  background: #1f6f54; color: #fff; border-radius: 50%; width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center; font-weight: 700;
+  font-size: 13px; border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.3);
+}
+.pickup-marker {
+  background: #d9663a; color: #fff; border-radius: 6px; width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center; font-size: 16px;
+  border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.3);
+}
+
+/* Language switch + RTL support */
+.lang-switch { margin-left: auto; display: flex; gap: 4px; }
+html[dir="rtl"] .lang-switch { margin-left: 0; margin-right: auto; }
+.lang-btn {
+  width: auto; padding: 5px 12px; font-size: 13px; font-weight: 600;
+  background: rgba(255,255,255,.18); color: #fff; border: 1px solid rgba(255,255,255,.35);
+  border-radius: 6px; cursor: pointer;
+}
+.lang-btn.active { background: #fff; color: #1f6f54; }
+
+/* RTL: flip form text alignment and narrative */
+html[dir="rtl"] body { direction: rtl; }
+html[dir="rtl"] label,
+html[dir="rtl"] .narrative,
+html[dir="rtl"] .driver,
+html[dir="rtl"] .impact h3,
+html[dir="rtl"] h2 { text-align: right; }
+html[dir="rtl"] .narrative table th,
+html[dir="rtl"] .narrative table td { text-align: right; }
+html[dir="rtl"] .narrative { font-size: 14px; }

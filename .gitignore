@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# Node
+node_modules/
+
+# Build / cache artifacts
+.cache/
+cdk.out/
+*.zip
+.cli/logs/
+
+# Secrets and local config (contain Cognito client secret / tokens)
+.env
+.env.local
+**/agentcore/.env.local
+**/agentcore/agentcore.json
+
+# OS
+.DS_Store
