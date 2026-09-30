@@ -95,15 +95,50 @@ def list_recipients() -> list:
     ]
 
 
+# Dietary tags that satisfy a recipient's need beyond an exact-name match.
+# Encodes the Knowledge Base rules: e.g. vegetarian/vegan food is acceptable for a
+# halal recipient (no meat means no non-halal meat), and vegan satisfies vegetarian.
+_DIET_SATISFIERS = {
+    "halal": ("halal", "vegetarian", "vegan"),
+    "vegetarian": ("vegetarian", "vegan"),
+    "vegan": ("vegan",),
+    "low-salt": ("low-salt", "low salt", "fresh", "lightly seasoned"),
+    "diabetic-friendly": ("diabetic-friendly", "low-sugar", "balanced"),
+    "gluten-free": ("gluten-free", "rice", "naturally gluten-free"),
+}
+
+# Tags that explicitly conflict with a need, regardless of other labels present.
+_DIET_CONFLICTS = {
+    "halal": ("pork", "non-halal", "alcohol"),
+    "vegetarian": ("meat", "poultry", "fish", "chicken", "beef", "pork", "seafood"),
+    "vegan": ("meat", "poultry", "fish", "chicken", "beef", "pork", "seafood",
+              "dairy", "egg", "honey", "milk", "cheese"),
+    "low-salt": ("heavily salted", "brined", "cured"),
+    "gluten-free": ("wheat", "barley", "rye", "bread", "pasta"),
+}
+
+
 def _dietary_ok(recipient_need: str, food_dietary_info: str) -> bool:
     """Hard rule: the food must satisfy the recipient's dietary need.
 
-    A recipient with no stated need accepts anything. Otherwise the recipient's
-    need term must appear in the food's dietary info (e.g. need 'halal' requires the
-    food to be tagged 'halal').
+    A recipient with no stated need accepts anything. Otherwise the food is acceptable
+    when it carries a tag that satisfies the need (e.g. vegetarian or vegan food
+    satisfies a halal need) AND carries no tag that explicitly conflicts with the need
+    (e.g. pork conflicts with halal). This reflects the Knowledge Base dietary matrix.
     """
     need = recipient_need.lower().strip()
-    return not need or need in food_dietary_info.lower()
+    if not need:
+        return True
+    food = food_dietary_info.lower()
+
+    # Any explicit conflicting ingredient is a hard fail.
+    for bad in _DIET_CONFLICTS.get(need, ()):  # noqa: SIM110
+        if bad in food:
+            return False
+
+    # Accept if the food carries a satisfying tag (name match or an implied one).
+    satisfiers = _DIET_SATISFIERS.get(need, (need,))
+    return any(tag in food for tag in satisfiers)
 
 
 @tool

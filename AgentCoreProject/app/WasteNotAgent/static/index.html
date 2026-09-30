@@ -23,20 +23,20 @@
     <section class="panel form-panel">
       <h2 data-i18n="report">Report surplus</h2>
       <form id="rescue-form">
-        <label data-i18n="pickup">Pickup location
+        <label><span data-i18n="pickup">Pickup location</span>
           <select id="pickup" required></select>
         </label>
-        <label data-i18n="foodType">Food type
+        <label><span data-i18n="foodType">Food type</span>
           <input id="food_type" value="chicken biryani" required />
         </label>
-        <label data-i18n="dietary">Dietary info
+        <label><span data-i18n="dietary">Dietary info</span>
           <input id="dietary_info" value="halal, contains rice" required />
         </label>
         <div class="row">
-          <label data-i18n="portions">Portions
+          <label><span data-i18n="portions">Portions</span>
             <input id="quantity" type="number" min="1" value="40" required />
           </label>
-          <label data-i18n="hours">Hours to expiry
+          <label><span data-i18n="hours">Hours to expiry</span>
             <input id="hours" type="number" min="0.5" step="0.5" value="2" required />
           </label>
         </div>

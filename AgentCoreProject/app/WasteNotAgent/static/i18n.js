@@ -74,7 +74,10 @@ function applyLang(lang) {
   // Translate all elements tagged with data-i18n (skip nested markup safely).
   document.querySelectorAll("[data-i18n]").forEach((el) => {
     const key = el.getAttribute("data-i18n");
-    if (dict[key] && typeof dict[key] === "string") el.textContent = dict[key];
+    if (!dict[key] || typeof dict[key] !== "string") return;
+    // Safety: never overwrite an element that wraps child controls (inputs/selects),
+    // which would remove them. Only translate leaf/text elements.
+    if (el.children.length === 0) el.textContent = dict[key];
   });
 
   // Keep the submit button label in sync (it is not idle when disabled).
