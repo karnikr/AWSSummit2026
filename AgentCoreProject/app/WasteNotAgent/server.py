@@ -41,10 +41,10 @@ your reasoning:
 3. plan_route: order multiple drops to minimise total travel time.
 4. dispatch_driver: assign an available driver. If a driver is unavailable, re-dispatch.
 5. compute_impact: report impact, leading with meals rescued.
-6. notify: send a short bilingual (English + Arabic) alert to the parties.
 
-Explain the beat-the-clock reasoning (time left vs. drive time), the split decision, and
-confirm the dietary safety rule held. Be concise but show your reasoning."""
+Do NOT include a notification step in your reasoning or summary. Explain the
+beat-the-clock reasoning (time left vs. drive time), the split decision, and confirm the
+dietary safety rule held. Be concise but show your reasoning."""
 
 app = FastAPI(title="WasteNot")
 
@@ -118,13 +118,15 @@ def _narrative(req: RescueRequest) -> str:
             " Respond ENTIRELY in Arabic (العربية). Write all headings, explanations, and "
             "tables in Arabic. Keep numbers and place names readable."
         )
-    agent = Agent(model=model, system_prompt=SYSTEM_PROMPT + lang_note, tools=t.ALL_TOOLS)
+    # Exclude notify: notification is not part of the shown reasoning flow.
+    reasoning_tools = [tool for tool in t.ALL_TOOLS if tool is not t.notify]
+    agent = Agent(model=model, system_prompt=SYSTEM_PROMPT + lang_note, tools=reasoning_tools)
     prompt = (
         f"A donor ({req.pickup_name}, lat {req.pickup_lat}, lon {req.pickup_lon}) has "
         f"{req.quantity} portions of {req.food_type} ({req.dietary_info}) available for "
         f"the next {req.hours_available} hours. Classify the safe window, match and split "
-        f"across recipients as needed, order the route, dispatch a driver, report impact, "
-        f"and send a bilingual notification. Explain each decision."
+        f"across recipients as needed, order the route, dispatch a driver, and report impact. "
+        f"Do not send or mention any notification. Explain each decision."
     )
     if req.lang == "ar":
         prompt += " اكتب ردك بالكامل باللغة العربية."
