@@ -19,28 +19,35 @@ function stopMarker(lat, lon, n, popup) {
 }
 
 async function loadDonors() {
-  const res = await fetch("/donors");
-  donors = await res.json();
-  const sel = document.getElementById("pickup");
-  sel.innerHTML = "";
-  donors.forEach((d) => {
-    const opt = document.createElement("option");
-    opt.value = d.donor_id;
-    opt.textContent = `${d.name} (${d.type})`;
-    sel.appendChild(opt);
-  });
+  try {
+    const res = await fetch("/donors");
+    donors = await res.json();
+    const sel = document.getElementById("pickup");
+    sel.innerHTML = "";
+    donors.forEach((d) => {
+      const opt = document.createElement("option");
+      opt.value = d.donor_id;
+      opt.textContent = `${d.name} (${d.type})`;
+      sel.appendChild(opt);
+    });
+  } catch (err) {
+    console.error("Failed to load donors:", err);
+  }
 }
 
 function renderMap(plan) {
   layer.clearLayers();
   const pts = [];
   const p = plan.pickup;
-  pickupMarker(p.lat, p.lon, p.name).addTo(layer);
-  pts.push([p.lat, p.lon]);
+  if (p) {
+    pickupMarker(p.lat, p.lon, p.name).addTo(layer);
+    pts.push([p.lat, p.lon]);
+  }
 
-  // Build the ordered route path: pickup -> stop1 -> stop2 ...
-  const path = [[p.lat, p.lon]];
-  plan.route.ordered_stops.forEach((s, i) => {
+  // Guard: route/ordered_stops may be missing or empty (e.g. no eligible match).
+  const stops = (plan.route && plan.route.ordered_stops) || [];
+  const path = p ? [[p.lat, p.lon]] : [];
+  stops.forEach((s, i) => {
     const popup =
       `<b>${t("stop")} ${i + 1}: ${s.name}</b><br/>${s.allocated}<br/>` +
       `diet: ${s.dietary_needs || "any"}<br/>leg ${s.leg_km} km`;
@@ -58,17 +65,18 @@ function renderMap(plan) {
 function renderImpact(plan) {
   const box = document.getElementById("impact");
   box.classList.remove("hidden");
-  const i = plan.impact;
-  document.getElementById("m-meals").textContent = i.meals_rescued;
-  document.getElementById("m-co2").textContent = i.co2_avoided_kg;
-  document.getElementById("m-cost").textContent = i.cost_avoided_units;
-  document.getElementById("m-dist").textContent = plan.route.total_km;
-  document.getElementById("m-min").textContent = plan.route.total_minutes;
+  const i = plan.impact || {};
+  const route = plan.route || { ordered_stops: [], total_km: 0, total_minutes: 0 };
+  document.getElementById("m-meals").textContent = i.meals_rescued ?? 0;
+  document.getElementById("m-co2").textContent = i.co2_avoided_kg ?? 0;
+  document.getElementById("m-cost").textContent = i.cost_avoided_units ?? 0;
+  document.getElementById("m-dist").textContent = route.total_km ?? 0;
+  document.getElementById("m-min").textContent = route.total_minutes ?? 0;
 
-  const d = plan.dispatch;
+  const d = plan.dispatch || {};
   const dl = document.getElementById("driver-line");
   if (d.status === "dispatched") {
-    dl.textContent = `🚗 ${d.driver_name} (${d.vehicle}) · ${plan.route.ordered_stops.length} stop(s)`;
+    dl.textContent = `🚗 ${d.driver_name} (${d.vehicle}) · ${route.ordered_stops.length} stop(s)`;
   } else {
     dl.textContent = t("noDriver");
   }
@@ -86,11 +94,19 @@ document.getElementById("rescue-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const btn = document.getElementById("submit-btn");
   btn.disabled = true;
-  btn.textContent = "Running agent…";
+  btn.textContent = t("runningBtn");
   document.getElementById("thinking").classList.remove("hidden");
   document.getElementById("narrative").textContent = t("running");
 
   const donor = donors.find((d) => d.donor_id === document.getElementById("pickup").value);
+  if (!donor) {
+    document.getElementById("narrative").textContent = "No pickup location selected.";
+    btn.disabled = false;
+    btn.textContent = t("run");
+    document.getElementById("thinking").classList.add("hidden");
+    return;
+  }
+
   const payload = {
     food_type: document.getElementById("food_type").value,
     dietary_info: document.getElementById("dietary_info").value,
@@ -99,7 +115,7 @@ document.getElementById("rescue-form").addEventListener("submit", async (e) => {
     pickup_name: donor.name,
     pickup_lat: donor.lat,
     pickup_lon: donor.lon,
-    lang: (typeof CURRENT_LANG !== 'undefined' ? CURRENT_LANG : 'en'),
+    lang: (typeof CURRENT_LANG !== "undefined" ? CURRENT_LANG : "en"),
   };
 
   try {
@@ -108,16 +124,22 @@ document.getElementById("rescue-form").addEventListener("submit", async (e) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`Server ${res.status}: ${errText}`);
+    }
     const plan = await res.json();
     renderMap(plan);
     renderImpact(plan);
+    const narrative = plan.narrative || "(No narrative returned.)";
     document.getElementById("narrative").innerHTML =
-      window.marked ? marked.parse(plan.narrative) : plan.narrative;
+      window.marked ? marked.parse(narrative) : narrative;
   } catch (err) {
-    document.getElementById("narrative").textContent = "Error: " + err;
+    console.error(err);
+    document.getElementById("narrative").textContent = "Error: " + err.message;
   } finally {
     btn.disabled = false;
-    btn.textContent = "Run rescue →";
+    btn.textContent = t("run");
     document.getElementById("thinking").classList.add("hidden");
   }
 });

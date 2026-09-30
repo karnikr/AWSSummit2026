@@ -10,6 +10,7 @@ const I18N = {
     portions: "Portions",
     hours: "Hours to expiry",
     run: "Run rescue →",
+    runningBtn: "Running agent…",
     impact: "Impact",
     meals: "meals rescued",
     co2: "kg CO₂ avoided",
@@ -34,7 +35,8 @@ const I18N = {
     dietary: "المعلومات الغذائية",
     portions: "الحصص",
     hours: "الساعات حتى الانتهاء",
-    run: "← تنفيذ الإنقاذ",
+    run: "تنفيذ الإنقاذ ←",
+    runningBtn: "...جارٍ التشغيل",
     impact: "الأثر",
     meals: "وجبة تم إنقاذها",
     co2: "كجم ثاني أكسيد الكربون",
@@ -54,17 +56,30 @@ const I18N = {
 
 let CURRENT_LANG = "en";
 
+function t(key, arg) {
+  const dict = I18N[CURRENT_LANG] || I18N.en;
+  const v = dict[key];
+  if (v === undefined) return key;
+  return typeof v === "function" ? v(arg) : v;
+}
+
 function applyLang(lang) {
+  if (!I18N[lang]) return;
   CURRENT_LANG = lang;
   const dict = I18N[lang];
   const html = document.documentElement;
   html.lang = lang;
   html.dir = lang === "ar" ? "rtl" : "ltr";
 
+  // Translate all elements tagged with data-i18n (skip nested markup safely).
   document.querySelectorAll("[data-i18n]").forEach((el) => {
     const key = el.getAttribute("data-i18n");
     if (dict[key] && typeof dict[key] === "string") el.textContent = dict[key];
   });
+
+  // Keep the submit button label in sync (it is not idle when disabled).
+  const btn = document.getElementById("submit-btn");
+  if (btn && !btn.disabled) btn.textContent = dict.run;
 
   const toggle = document.getElementById("lang-toggle");
   if (toggle) {
@@ -73,17 +88,22 @@ function applyLang(lang) {
   }
 }
 
-// Single sliding toggle: click or keyboard flips between EN and Arabic.
-const langToggle = document.getElementById("lang-toggle");
-if (langToggle) {
+// Wire the single sliding toggle once the DOM is ready.
+function initLangToggle() {
+  const langToggle = document.getElementById("lang-toggle");
+  if (!langToggle) return;
   const flip = () => applyLang(CURRENT_LANG === "ar" ? "en" : "ar");
   langToggle.addEventListener("click", flip);
   langToggle.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); flip(); }
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      flip();
+    }
   });
 }
 
-function t(key, arg) {
-  const v = I18N[CURRENT_LANG][key];
-  return typeof v === "function" ? v(arg) : v;
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initLangToggle);
+} else {
+  initLangToggle();
 }
