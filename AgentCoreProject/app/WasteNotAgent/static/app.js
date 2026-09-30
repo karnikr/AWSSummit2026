@@ -67,11 +67,15 @@ function renderImpact(plan) {
   box.classList.remove("hidden");
   const i = plan.impact || {};
   const route = plan.route || { ordered_stops: [], total_km: 0, total_minutes: 0 };
-  document.getElementById("m-meals").textContent = i.meals_rescued ?? 0;
-  document.getElementById("m-co2").textContent = i.co2_avoided_kg ?? 0;
-  document.getElementById("m-cost").textContent = i.cost_avoided_units ?? 0;
-  document.getElementById("m-dist").textContent = route.total_km ?? 0;
-  document.getElementById("m-min").textContent = route.total_minutes ?? 0;
+  const setNum = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = (val === undefined || val === null) ? 0 : val;
+  };
+  setNum("m-meals", i.meals_rescued);
+  setNum("m-co2", i.co2_avoided_kg);
+  setNum("m-cost", i.cost_avoided_units);
+  setNum("m-dist", route.total_km);
+  setNum("m-min", route.total_minutes);
 
   const d = plan.dispatch || {};
   const dl = document.getElementById("driver-line");
