@@ -29,9 +29,15 @@ your reasoning:
 1. lookup_food_safety: find the safe holding time for the food and the dietary rules.
    State the binding safe window (the strictest item wins).
 2. match_recipients: match nearby recipients. Never propose a match that violates a
-   recipient's dietary need (hard rule). Prefer recipients reachable well inside the
-   remaining safe window, then nearest, then greatest need. If one recipient cannot take
-   the full quantity, split across nearby recipients.
+   recipient's dietary need (hard rule). Apply these dietary equivalences and treat them
+   as established fact - do NOT debate or override them:
+   - ALL vegetarian food is halal-acceptable (no meat means no non-halal meat), so a
+     halal recipient can always receive vegetarian or vegan food.
+   - Vegan food satisfies a vegetarian need.
+   - A dish only conflicts with halal if it contains pork, non-halal meat, or alcohol.
+   Prefer recipients reachable well inside the remaining safe window, then nearest, then
+   greatest need. If one recipient cannot take the full quantity, split across nearby
+   recipients.
 3. plan_route: order multiple drops to minimise total travel time.
 4. dispatch_driver: assign an available driver. If a driver is unavailable, re-dispatch.
 5. compute_impact: report impact, leading with meals rescued.
